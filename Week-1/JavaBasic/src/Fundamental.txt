@@ -1,0 +1,361 @@
+The **SOLID principles** are **5 rules** that help you write **clean, maintainable, and reusable object-oriented code**. They were introduced by Robert C. Martin ("Uncle Bob"). ([Baeldung on Kotlin][1])
+
+Since you're learning **Java Full Stack**, these are very important for interviews (CTS, TCS, Zoho, etc.).
+
+---
+
+# S - Single Responsibility Principle (SRP)
+
+**Rule:** A class should have **only one job** (one reason to change).
+
+### ❌ Bad Example
+
+```java
+class Student {
+    void saveStudent() {
+        // save to database
+    }
+
+    void printStudent() {
+        // print details
+    }
+}
+```
+
+This class has **2 responsibilities**:
+
+* Save data
+* Print data
+
+If printing changes, the class changes.
+If database changes, the class also changes.
+
+---
+
+### ✅ Good Example
+
+```java
+class Student {
+    String name;
+}
+
+class StudentRepository {
+    void save(Student s) {
+        // save
+    }
+}
+
+class StudentPrinter {
+    void print(Student s) {
+        // print
+    }
+}
+```
+
+Now every class has **one responsibility**.
+
+**Easy Remember:**
+
+> One class = One job.
+
+---
+
+# O - Open Closed Principle (OCP)
+
+**Rule:**
+A class should be **open for extension** but **closed for modification**.
+
+Meaning:
+
+* Add new features
+* Don't edit old working code
+
+---
+
+### ❌ Bad Example
+
+```java
+class Payment {
+    void pay(String type) {
+
+        if(type.equals("UPI")){
+            System.out.println("UPI");
+        }
+
+        if(type.equals("CARD")){
+            System.out.println("Card");
+        }
+    }
+}
+```
+
+Tomorrow if PayPal comes...
+
+You edit this class.
+
+Then Apple Pay...
+
+Again edit.
+
+This is bad.
+
+---
+
+### ✅ Good Example
+
+```java
+interface Payment {
+    void pay();
+}
+
+class UPI implements Payment {
+    public void pay() {
+        System.out.println("UPI");
+    }
+}
+
+class Card implements Payment {
+    public void pay() {
+        System.out.println("Card");
+    }
+}
+```
+
+Now if PayPal comes
+
+```java
+class PayPal implements Payment {
+    public void pay() {
+        System.out.println("Paypal");
+    }
+}
+```
+
+Old code remains untouched.
+
+**Easy Remember:**
+
+> Add new classes instead of changing old classes.
+
+---
+
+# L - Liskov Substitution Principle (LSP)
+
+**Rule:**
+A child class should be able to replace its parent class without breaking the program.
+
+---
+
+Example
+
+```java
+class Bird {
+    void fly() {}
+}
+```
+
+```java
+class Sparrow extends Bird {}
+```
+
+Works perfectly.
+
+But...
+
+```java
+class Penguin extends Bird {
+    void fly() {
+        throw new UnsupportedOperationException();
+    }
+}
+```
+
+Penguins can't fly.
+
+So Penguin should **not** extend Bird if `Bird` promises flying.
+
+Instead,
+
+```java
+class Bird {}
+
+class FlyingBird extends Bird {
+    void fly(){}
+}
+
+class Sparrow extends FlyingBird {}
+
+class Penguin extends Bird {}
+```
+
+Now everything makes sense.
+
+**Easy Remember:**
+
+> Child class should behave like the parent.
+
+---
+
+# I - Interface Segregation Principle (ISP)
+
+**Rule:**
+Don't force a class to implement methods it doesn't need.
+
+---
+
+### ❌ Bad Example
+
+```java
+interface Worker {
+    void work();
+    void eat();
+}
+```
+
+Robot
+
+```java
+class Robot implements Worker {
+
+    public void work(){}
+
+    public void eat(){
+        // Robot doesn't eat!
+    }
+}
+```
+
+Bad design.
+
+---
+
+### ✅ Good Example
+
+```java
+interface Workable {
+    void work();
+}
+
+interface Eatable {
+    void eat();
+}
+```
+
+Human
+
+```java
+class Human implements Workable, Eatable {
+}
+```
+
+Robot
+
+```java
+class Robot implements Workable {
+}
+```
+
+Robot only implements what it needs.
+
+**Easy Remember:**
+
+> Small interfaces are better than one big interface.
+
+---
+
+# D - Dependency Inversion Principle (DIP)
+
+**Rule:**
+Depend on **interfaces**, not concrete classes.
+
+---
+
+### ❌ Bad Example
+
+```java
+class Keyboard {
+}
+
+class Computer {
+
+    Keyboard keyboard = new Keyboard();
+
+}
+```
+
+Computer always depends on Keyboard.
+
+What if tomorrow you use BluetoothKeyboard?
+
+Need to change Computer.
+
+---
+
+### ✅ Good Example
+
+```java
+interface InputDevice {
+}
+
+class Keyboard implements InputDevice {
+}
+
+class BluetoothKeyboard implements InputDevice {
+}
+```
+
+Computer
+
+```java
+class Computer {
+
+    InputDevice device;
+
+    Computer(InputDevice device){
+        this.device = device;
+    }
+
+}
+```
+
+Now
+
+```java
+Computer c1 = new Computer(new Keyboard());
+
+Computer c2 = new Computer(new BluetoothKeyboard());
+```
+
+Computer doesn't care which keyboard is used.
+
+**Easy Remember:**
+
+> Depend on interfaces, not implementations.
+
+---
+
+# Interview Shortcut
+
+| Letter | Principle             | Easy Meaning                       |
+| ------ | --------------------- | ---------------------------------- |
+| **S**  | Single Responsibility | One class = One job                |
+| **O**  | Open Closed           | Extend, don't modify               |
+| **L**  | Liskov Substitution   | Child should replace parent safely |
+| **I**  | Interface Segregation | Small interfaces only              |
+| **D**  | Dependency Inversion  | Depend on interfaces               |
+
+---
+
+## Simple Real-Life Analogy
+
+Imagine you're building a **restaurant system**:
+
+* **S:** Chef only cooks. Cashier only handles payment.
+* **O:** Add a new payment method (UPI, Card) without changing the cashier's existing code.
+* **L:** Any payment method should work wherever a payment is expected.
+* **I:** Waiter shouldn't be forced to know how to cook.
+* **D:** Restaurant accepts any payment device through a common interface, not only one specific card machine.
+
+These principles make code **easier to maintain, test, and extend** as projects grow. ([Baeldung on Kotlin][1])
+
+[1]: https://www.baeldung.com/solid-principles?utm_source=chatgpt.com "A Solid Guide to SOLID Principles | Baeldung"
